@@ -1,0 +1,76 @@
+version: "3.9"
+
+name: crowdsec
+
+volumes:
+    crowdsec_data: {}
+
+networks:
+  t2_proxy:
+    name: t2_proxy
+    external: true
+
+secrets:
+ #crowdsec
+  crowdsec_key_api_1:
+    file: $SECRETSDIR/CROWDSEC_BOUNCER_KEY_API_1
+  crowdsec_key_api_2:
+    file: $SECRETSDIR/CROWDSEC_BOUNCER_KEY_API_2
+
+services:
+  # crowdsec
+  crowdsec:
+    image: crowdsecurity/crowdsec
+    container_name: crowdsec
+    expose:
+      - 6060
+    #secrets: [crowdsec_key_api_1, crowdsec_key_api_2]
+    environment:
+      TZ: $TZ
+      COLLECTIONS: "crowdsecurity/traefik crowdsecurity/http-cve crowdsecurity/whitelist-good-actors crowdsecurity/iptables crowdsecurity/linux crowdsecurity/nginx crowdsecurity/nginx-proxy-manager"
+      PARSERS: "crowdsecurity/dateparse-enrich crowdsecurity/traefik-logs crowdsecurity/nginx-proxy-manager-logs crowdsecurity/sshd-logs crowdsecurity/syslog-logs crowdsecurity/geoip-enrich"
+      GID: "${GID-1000}"
+      CUSTOM_HOSTNAME: docker-crowdsec
+      #CROWDSEC_BOUNCER_KEY_API_1: /run/secrets/crowdsec_key_api_1 
+      #CROWDSEC_BOUNCER_KEY_API_2: /run/secrets/crowdsec_key_api_2 
+    volumes:
+      #ro
+      - $DOCKERDIR/logs:/logs:ro
+      - /var/log:/var/log:ro
+      # wr
+      - $APPDIR/crowdsec:/etc/crowdsec
+      - crowdsec_data:/var/lib/crowdsec/data
+    networks: [t2_proxy]
+    security_opt: [no-new-privileges:true]
+    restart: unless-stopped
+    labels:
+      traefik.enable: true
+      traefik.http.routers.crowdsec-rtr.entrypoints: https
+      traefik.http.routers.crowdsec-rtr.rule: Host(`$CROWDSEC_DOMAINNAME`)
+      traefik.http.routers.crowdsec-rtr.service: crowdsec-svc
+      traefik.http.services.crowdsec-svc.loadbalancer.server.port: 8080
+      traefik.http.routers.crowdsec-rtr.tls: true
+      org.label-schema.group: "monitoring"
+  
+  #dashboards crowdsec
+  crowdsec-dashboard:
+    container_name: crowdsec-dashboard
+    build: $APPDIR/crowdsec-dashboard
+    environment:
+      TZ: $TZ
+      MB_DB_FILE: /data/metabase.db
+      MGID: "${GID-1000}"
+    volumes:
+      - crowdsec_data:/metabase-data/
+    networks: [t2_proxy]
+    security_opt: [no-new-privileges:true]
+    restart: unless-stopped
+    labels:
+      traefik.enable: true
+      traefik.http.routers.crdb-rtr.entrypoints: https
+      traefik.http.routers.crdb-rtr.rule: Host(`$CRDB_DOMAINNAME`)
+      traefik.http.routers.crdb-rtr.service: crdb-svc
+      traefik.http.services.crdb-svc.loadbalancer.server.port: 3000
+      #traefik.http.routers.crdb-rtr.middlewares: middlewares-authelia@file
+      traefik.http.routers.crdb-rtr.tls: true
+      org.label-schema.group: "monitoring"

@@ -1,0 +1,116 @@
+version: "3.9"
+
+name: authelia
+
+volumes:
+    authelia_data: {}
+    redis_data: {}
+    mariadb_data: {}
+
+networks:
+  t2_proxy:
+    name: t2_proxy
+    external: true
+
+  net_auth:
+    name: net_auth
+    driver: bridge
+    ipam:
+      config:
+        - subnet: 172.16.89.0/24
+
+########################### SECRETS
+secrets:
+ #authelia
+  authelia_jwt_secret:
+    file: $SECRETSDIR/AUTHELIA_JWT_SECRET
+  authelia_session_secret:
+    file: $SECRETSDIR/AUTHELIA_SESSION_SECRET
+  authelia_storage_mysql_password:
+    file: $SECRETSDIR/AUTHELIA_STORAGE_MYSQL_PASSWORD
+  authelia_storage_encryption_key:
+    file: $SECRETSDIR/AUTHELIA_STORAGE_ENCRYPTION_KEY
+  authelia_session_redis_password:
+    file: $SECRETSDIR/AUTHELIA_REDIS_PASSWORD
+  #db 
+  mysql_root_password:
+    file: $SECRETSDIR/AUTHELIA_MYSQL_ROOT_PASSWORD
+  mysql_password:
+    file: $SECRETSDIR/AUTHELIA_STORAGE_MYSQL_PASSWORD
+  #redis
+  redis_password:
+    file: $SECRETSDIR/AUTHELIA_REDIS_PASSWORD
+
+services:
+  # authelia
+  authelia:
+    container_name: authelia
+    image: authelia/authelia:latest
+    volumes:
+      - $APPDIR/authelia:/config
+      - authelia_data:/data
+    secrets: [authelia_jwt_secret, authelia_session_secret, authelia_storage_mysql_password, authelia_storage_encryption_key, authelia_session_redis_password]
+    environment:
+      TZ: $TZ
+      AUTHELIA_JWT_SECRET_FILE: /run/secrets/authelia_jwt_secret
+      AUTHELIA_SESSION_SECRET_FILE: /run/secrets/authelia_session_secret
+      AUTHELIA_STORAGE_MYSQL_PASSWORD_FILE: /run/secrets/authelia_storage_mysql_password
+      AUTHELIA_STORAGE_ENCRYPTION_KEY_FILE: /run/secrets/authelia_storage_encryption_key
+      AUTHELIA_SESSION_REDIS_PASSWORD_FILE: /run/secrets/authelia_session_redis_password
+    networks: [t2_proxy, net_auth]
+    security_opt: [no-new-privileges:true]
+    restart: unless-stopped
+    depends_on: [redis, mariadb]
+    labels:
+      traefik.enable: true
+      traefik.http.routers.authelia-rtr.entrypoints: https
+      traefik.http.routers.authelia-rtr.rule: Host(`$AUTH_DOMAINNAME`)
+      traefik.http.routers.authelia-rtr.service: authelia-svc
+      traefik.http.routers.authelia-rtr.middlewares: middlewares-authelia@file
+      traefik.http.services.authelia-svc.loadbalancer.server.port: 9091
+      traefik.http.routers.authelia-rtr.tls: true
+      org.label-schema.group: "monitoring"
+
+  # mariadb 
+  mariadb:
+    container_name: mariadb
+    image: 'bitnami/mariadb:latest'
+    expose:
+      - 3306
+    volumes:
+      - mariadb_data:/bitnami/mariadb/data
+      - /etc/localtime:/etc/localtime:ro
+    secrets: [mysql_root_password, mysql_password]
+    security_opt: [no-new-privileges:true]
+    networks: [net_auth]
+    environment:
+      PUID: $PUID
+      PGID: $PGID
+      ALLOW_EMPTY_PASSWORD: no
+      MARIADB_SKIP_TEST_DB: yes
+      MARIADB_ROOT_PASSWORD_FILE: /run/secrets/mysql_root_password
+      MARIADB_DATABASE: authelia
+      MARIADB_USER: authelia
+      MARIADB_PASSWORD_FILE: /run/secrets/mysql_password
+    labels:
+      org.label-schema.group: "monitoring"
+
+  # Redis - Key-value Store
+  redis:
+    container_name: redis
+    image: redis:alpine
+    restart: unless-stopped
+    command: ["sh", "-c", "redis-server --requirepass \"$$(cat /run/secrets/redis_password)\" --maxmemory 512mb --maxmemory-policy allkeys-lru"]
+    expose:
+      - 6379
+    networks: [net_auth]
+    security_opt: [no-new-privileges:true]
+    volumes:
+      - redis_data:/data
+      - /etc/TZ:/etc/timezone:ro
+      - /etc/localtime:/etc/localtime:ro
+    environment: 
+      - REDIS_PASSWORD_FILE=/run/secrets/redis_password
+    secrets: [redis_password]
+    labels:
+      org.label-schema.group: "monitoring"
