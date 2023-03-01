@@ -12,7 +12,7 @@ The latest versions of dockers were used on the publication mark. Now they may n
 - crowdsec
 - crowdsec-dashboard
 
-![traefik](https://i.ibb.co/86ygk01/1.jpg)
+![traefik](https://camo.githubusercontent.com/de5dde05b28f8032697e63a828dabf680fe577ec8d6b55e4814a567483d68476/68747470733a2f2f692e6962622e636f2f383679676b30312f312e6a7067)
 
 ## Create new secrets
 ```bash
