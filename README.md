@@ -12,25 +12,43 @@ The latest versions of dockers were used on the publication mark. Now they may n
 - crowdsec
 - crowdsec-dashboard
 
-![traefik](https://camo.githubusercontent.com/de5dde05b28f8032697e63a828dabf680fe577ec8d6b55e4814a567483d68476/68747470733a2f2f692e6962622e636f2f383679676b30312f312e6a7067)
-
 ## Create new secrets
 ```bash
-cd secrets/ && for i in *; do openssl rand -hex 16 > $i; done
-cd ..
+cd secrets/ && for i in *; do openssl rand -hex 16 > $i; done && cd ..
 ```
 ## Change config .env
 ```bash
 cp .env.example .env
+touch appdata/traefik/acme/acme.json
+chmod 600 
 ```
 > change `SITE.DOMAIN `, `USER`, `PUID` and `PGID`
+
+## Change config acme
+```bash
+touch appdata/traefik/acme/acme.json
+chmod 600 appdata/traefik/acme/acme.json
+```
 
 ## Deploy first
 ```bash
 docker network create -d bridge socket_proxy --subnet 172.16.91.0/24
 docker network create -d bridge t2_proxy --subnet 172.16.90.0/24
+```
+
+## Deploy traefik and docker-socket-proxy
+```bash
 docker-compose up -d
 ```
+
+# check logs
+```bash
+docker-compose logs
+```
+> cat logs/traefik/traefik.log
+
+go https://traefic.SITE.DOMAIN
+
 ## Deploy services
 ```bash
 docker-compose -p svc -f docker-compose-svc.yml up -d
@@ -54,4 +72,5 @@ and replase all `site.domain` in configuration.yml
 docker-compose -p auth -f docker-compose-auth.yml up -d
 ```
 and uncomment 
-> #traefik.http.routers.SERVICES.middlewares: middlewares-authelia@file in docker-compose-*.yml files.
+> #traefik.http.routers.SERVICES.middlewares: middlewares-authelia@file
+in docker-compose-*.yml files
