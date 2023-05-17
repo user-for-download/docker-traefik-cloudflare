@@ -84,8 +84,6 @@ services:
     depends_on: [socket-proxy]
     labels:
       traefik.enable: true
-      traefik.http.routers.http-catchall.entrypoints: http
-      traefik.http.routers.http-catchall.rule: HostRegexp(`{host:.+}`)
       traefik.http.routers.traefik-rtr.entrypoints: https
       traefik.http.routers.traefik-rtr.rule: Host(`$TRAEFIK_DOMAINNAME`)
       traefik.http.routers.traefik-rtr.tls.certresolver: dns-cloudflare
