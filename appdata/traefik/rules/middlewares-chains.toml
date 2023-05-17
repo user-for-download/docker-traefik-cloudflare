@@ -1,12 +1,12 @@
 [http.middlewares]
-  [http.middlewares.basic ]
+  [http.middlewares.chain-basic ]
     [http.middlewares.basic.chain]
       middlewares = [ "middlewares-compress", "middlewares-rate-limit"]
 
   [http.middlewares.chain-no-auth]
     [http.middlewares.chain-no-auth.chain]
-      middlewares = [ "middlewares-compress", "middlewares-rate-limit", "middlewares-https-redirectscheme"]
+      middlewares = [ "middlewares-compress", "middlewares-rate-limit"]
 
 [http.middlewares.chain-authelia]
     [http.middlewares.chain-authelia.chain]
-      middlewares = [ "middlewares-compress", "middlewares-rate-limit", "middlewares-https-redirectscheme", "middlewares-authelia"]
+      middlewares = [ "middlewares-compress", "middlewares-rate-limit", "middlewares-authelia"]

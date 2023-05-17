@@ -1,79 +1,84 @@
-# Global configuration
 [global]
-    checkNewVersion = true
-    sendAnonymousUsage = false
+  checkNewVersion = true
+  sendAnonymousUsage = false
 
-# Entrypoints definition
-[entryPoints]
-    [entryPoints.http]
-        address = ":80"
-        [entryPoints.http.http]
-            middlewares = ["basic@file"]
-        [entryPoints.http.forwardedHeaders]
-            trustedIPs = ["127.0.0.1/32","10.0.0.0/8","192.168.0.0/16","172.16.0.0/12","173.245.48.0/20","103.21.244.0/22","103.22.200.0/22","103.31.4.0/22","141.101.64.0/18","108.162.192.0/18","190.93.240.0/20","188.114.96.0/20","197.234.240.0/22","198.41.128.0/17","162.158.0.0/15","104.16.0.0/13","104.24.0.0/14","172.64.0.0/13","131.0.72.0/22" ]        
+[entryPoints.http]
+  address = ":80"
+  [entryPoints.http.http.redirections.entryPoint]
+    to = "https"
+    scheme = "https"
 
-     [entryPoints.https]
-        address = ":443"
-        [entryPoints.https.http]
-            middlewares = ["chain-no-auth@file"]
-        [entryPoints.https.forwardedHeaders]
-            trustedIPs = ["127.0.0.1/32","10.0.0.0/8","192.168.0.0/16","172.16.0.0/12","173.245.48.0/20","103.21.244.0/22","103.22.200.0/22","103.31.4.0/22","141.101.64.0/18","108.162.192.0/18","190.93.240.0/20","188.114.96.0/20","197.234.240.0/22","198.41.128.0/17","162.158.0.0/15","104.16.0.0/13","104.24.0.0/14","172.64.0.0/13","131.0.72.0/22" ]        
+[entryPoints.https]
+  address = ":443"
+  [entryPoints.https.http]
+    middlewares = [ "chain-no-auth@file" ]
+  [entryPoints.https.forwardedHeaders]
+    trustedIPs = [
+    "127.0.0.1/32",
+    "10.0.0.0/8",
+    "192.168.0.0/16",
+    "172.16.0.0/12",
+    "173.245.48.0/20",
+    "103.21.244.0/22",
+    "103.22.200.0/22",
+    "103.31.4.0/22",
+    "141.101.64.0/18",
+    "108.162.192.0/18",
+    "190.93.240.0/20",
+    "188.114.96.0/20",
+    "197.234.240.0/22",
+    "198.41.128.0/17",
+    "162.158.0.0/15",
+    "104.16.0.0/13",
+    "104.24.0.0/14",
+    "172.64.0.0/13",
+    "131.0.72.0/22"
+  ]
 
-    [entryPoints.metrics]
-        address = ":8081"
+[entryPoints.metrics]
+  address = ":8081"
 
-# SSl
-[certificatesResolvers]
-  [certificatesResolvers.dns-cloudflare]
-    [certificatesResolvers.dns-cloudflare.acme]
-      email = "954721@mail.ru"
-      caServer = "https://acme-staging-v02.api.letsencrypt.org/directory"
-      #caServer = "https://acme-v02.api.letsencrypt.org/directory"
-      storage = "/acme.json"
-      certificatesDuration = 72
-      [certificatesResolvers.dns-cloudflare.acme.dnsChallenge]
-        provider = "cloudflare"
-        delayBeforeCheck = "10"
-        resolvers = ["1.1.1.1:53","1.0.0.1:53"]
+[certificatesResolvers.dns-cloudflare.acme]
+  email = "aaaa@aa.aa"
+  caServer = "https://acme-v02.api.letsencrypt.org/directory"
+  storage = "/acme.json"
+  certificatesDuration = 72
+  [certificatesResolvers.dns-cloudflare.acme.dnsChallenge]
+    provider = "cloudflare"
+    delayBeforeCheck = "10"
+    resolvers = [ "1.1.1.1:53", "1.0.0.1:53" ]
 
-# Optional
 [log]
   level = "INFO"
   filePath = "/logs/traefik.log"
   format = "common"
 
-# Enable access logs
 [accessLog]
   filePath = "/logs/access.log"
   format = "common"
   bufferingSize = 100
   [accessLog.filters]
-    statusCodes = ["204-299","400-499","500-599"]
+    statusCodes = [ "204-299", "400-499", "500-599" ]
     retryAttempts = true
     minDuration = "10ms"
 
-# Enable API and dashboard
 [api]
   dashboard = true
 
-# Enable configuration backend
-[providers]
-  [providers.docker]
-    endpoint = "tcp://socket-proxy:2375"
-    network = "t2_proxy"
-    exposedByDefault = false
-    swarmMode = false
+[providers.docker]
+  endpoint = "tcp://socket-proxy:2375"
+  network = "t2_proxy"
+  exposedByDefault = false
+  swarmMode = false
 
-  [providers.file]
-    directory = "/etc/traefik"
-    watch = true
+[providers.file]
+  filename = "/etc/traefik/traefik.toml"
+  directory = "/etc/traefik/rules"
+  watch = true
 
-# metrics
-[metrics]
-  [metrics.prometheus]
-    entryPoint = "metrics"
-    addEntryPointsLabels = true
-    addRoutersLabels = true
-    addServicesLabels = true
-    #manualRouting = true
-    buckets = [0.1,0.3,1.2,5.0]
+[metrics.prometheus]
+  entryPoint = "metrics"
+  addEntryPointsLabels = true
+  addRoutersLabels = true
+  addServicesLabels = true
+  buckets = [ 0.1, 0.3, 1.2, 5.0 ]

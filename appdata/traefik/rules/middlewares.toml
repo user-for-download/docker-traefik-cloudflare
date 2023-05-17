@@ -1,24 +1,27 @@
-[http.middlewares]
-  [http.middlewares.middlewares-rate-limit]
-    [http.middlewares.middlewares-rate-limit.rateLimit]
-      average = 100
-      burst = 50
-      
-  [http.middlewares.middlewares-https-redirectscheme]
-    [http.middlewares.middlewares-https-redirectscheme.redirectScheme]
-      scheme = "https"
-      permanent = true
+[http.middlewares]  
+  [http.middlewares.middlewares-ipwhitelist.ipWhiteList]
+    sourceRange = [
+      "127.0.0.1/32",
+      "10.0.0.0/8",
+      "192.168.0.0/16",
+      "172.16.0.0/12"
+    ]
+  [http.middlewares.middlewares-rate-limit.rateLimit]
+    average = 100
+    burst = 50
+
+  [http.middlewares.middlewares-https-redirectscheme.redirectScheme]
+    scheme = "https"
+    permanent = true
 
   [http.middlewares.middlewares-compress]
     compress = { }
 
-  [http.middlewares.middlewares-authelia]
-    [http.middlewares.middlewares-authelia.forwardAuth]
-      address = "http://authelia:9091/api/verify?rd=https://auth.site.domain"
-      trustForwardHeader = true
-      authResponseHeaders = ["Remote-User", "Remote-Groups"]
-  
-  [http.middlewares.middlewares-control-allow-methods]
-    [http.middlewares.middlewares-control-allow-methods.headers]
-      accessControlAllowMethods= ["GET", "OPTIONS", "PUT"]
-      accessControlMaxAge = 100
+  [http.middlewares.middlewares-authelia.forwardAuth]
+    address = "http://authelia:9091/api/verify?rd=https://auth.site.domain"
+    trustForwardHeader = true
+    authResponseHeaders = [ "Remote-User", "Remote-Groups" ]
+
+  [http.middlewares.middlewares-control-allow-methods.headers]
+    accessControlAllowMethods = [ "GET", "OPTIONS", "PUT" ]
+    accessControlMaxAge = 100

@@ -1,0 +1,20 @@
+http:
+  serversTransports:
+    skipverify:
+      insecureSkipVerify: true
+  routers:
+    app-rtr:
+      rule: Host(`<SITE>`)
+      service: app-svc
+      middlewares:
+        - middlewares-rate-limit@file
+      entryPoints:
+        - https
+      tls:
+        certResolver: dns-cloudflare
+  services:
+    app-svc:
+      loadBalancer:
+        serversTransport: skipverify
+        servers:
+          - url: 'http://192.168.xxx.xxx'
