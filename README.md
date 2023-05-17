@@ -82,10 +82,8 @@ Uncomment in docker-compose-*.yml files
 #traefik.http.routers.<SERVICES>.middlewares: middlewares-authelia@file
 ```
 
-## If you changed then run the docker-compose 
+## If you changed then run the docker-compose down and up 
 ```bash
-docker-compose up -d 
-docker-compose -p svc -f docker-compose-svc.yml up -d
-docker-compose -p crds -f docker-compose-crwd.yml up -d
-docker-compose -p mntr -f docker-compose-mntr.yml up -d
+docker-compose -p <SERVICES> -f docker-compose-<FILE>.yml down
+docker-compose -p <SERVICES> -f docker-compose-<FILE>.yml up -d
 ```
