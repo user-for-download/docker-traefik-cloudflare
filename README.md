@@ -19,15 +19,12 @@ cd secrets/ && for i in *; do openssl rand -hex 16 > $i; done && cd ..
 ## Change config .env
 ```bash
 cp .env.example .env
-touch appdata/traefik/acme/acme.json
-chmod 600 
 ```
 > change `SITE.DOMAIN `, `USER`, `PUID` and `PGID`
 
-## Change config acme
+## Create acme.json
 ```bash
-touch appdata/traefik/acme/acme.json
-chmod 600 appdata/traefik/acme/acme.json
+touch appdata/traefik/acme/acme.json && chmod 600 appdata/traefik/acme/acme.json
 ```
 
 ## Deploy first
@@ -41,13 +38,12 @@ docker network create -d bridge t2_proxy --subnet 172.16.90.0/24
 docker-compose up -d
 ```
 
-# check logs
+Check logs
 ```bash
 docker-compose logs
+cat logs/traefik/traefik.log
 ```
-> cat logs/traefik/traefik.log
-
-go https://traefic.SITE.DOMAIN
+> go https://traefic.SITE.DOMAIN
 
 ## Deploy services
 ```bash
@@ -56,21 +52,40 @@ docker-compose -p crds -f docker-compose-crwd.yml up -d
 docker-compose -p mntr -f docker-compose-mntr.yml up -d
 ```
 
-## If you need authorization, configure 
-authella works only with HTTPS! Сreate a proxy in nginx-proxy-manager and get a certificate through Lets. 
+## If you need authorization, configure Authelia
+Authella works only with HTTPS! Get a certificate through Let’s Encrypt. 
 ```bash
-cd appdata/authelia/
-cp configuration.example.yml .configuration.yml 
+cd appdata/authelia/configuration.example.yml .configuration.yml 
 ```
 and replase all `site.domain` in configuration.yml 
 
 > Note: also change appdata/traefik/rules/middlewares.toml 
-> address:  https://auth. `site.domain`
+
+```yaml
+[http.middlewares.middlewares-authelia.forwardAuth]
+    address = "http://authelia:9091/api/verify?rd=https://auth.<SITE.DOMAIN>"
+```
+Check users Authelia
+```bash
+cat appdata/authelia/users_database.yml
+```
+
+> go https://auth.SITE.DOMAIN
 
 ## Deploy
 ```bash
 docker-compose -p auth -f docker-compose-auth.yml up -d
 ```
-and uncomment 
-> #traefik.http.routers.SERVICES.middlewares: middlewares-authelia@file
-in docker-compose-*.yml files
+
+Uncomment in docker-compose-*.yml files
+```yaml
+#traefik.http.routers.<SERVICES>.middlewares: middlewares-authelia@file
+```
+
+## If you changed then run the docker-compose 
+```bash
+docker-compose up -d 
+docker-compose -p svc -f docker-compose-svc.yml up -d
+docker-compose -p crds -f docker-compose-crwd.yml up -d
+docker-compose -p mntr -f docker-compose-mntr.yml up -d
+```
