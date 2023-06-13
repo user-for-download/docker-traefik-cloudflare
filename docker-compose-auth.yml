@@ -17,7 +17,7 @@ networks:
     driver: bridge
     ipam:
       config:
-        - subnet: 172.16.89.0/24
+        - subnet: 172.16.88.16/28
 
 ########################### SECRETS
 secrets:
@@ -49,6 +49,7 @@ services:
     volumes:
       - $APPDIR/authelia:/config
       - authelia_data:/data
+      - $DOCKERDIR/logs/authelia:/logs
     secrets: [authelia_jwt_secret, authelia_session_secret, authelia_storage_mysql_password, authelia_storage_encryption_key, authelia_session_redis_password]
     environment:
       TZ: $TZ

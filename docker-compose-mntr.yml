@@ -18,7 +18,7 @@ networks:
     driver: bridge
     ipam:
       config:
-        - subnet: 172.16.88.0/24
+        - subnet: 172.16.88.0/28
 
 ########################### SECRETS
 secrets:

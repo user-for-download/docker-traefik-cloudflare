@@ -10,13 +10,6 @@ networks:
     name: t2_proxy
     external: true
 
-secrets:
- #crowdsec
-  crowdsec_key_api_1:
-    file: $SECRETSDIR/CROWDSEC_BOUNCER_KEY_API_1
-  crowdsec_key_api_2:
-    file: $SECRETSDIR/CROWDSEC_BOUNCER_KEY_API_2
-
 services:
   # crowdsec
   crowdsec:
@@ -24,15 +17,12 @@ services:
     container_name: crowdsec
     expose:
       - 6060
-    #secrets: [crowdsec_key_api_1, crowdsec_key_api_2]
     environment:
       TZ: $TZ
-      COLLECTIONS: "crowdsecurity/traefik crowdsecurity/http-cve crowdsecurity/whitelist-good-actors crowdsecurity/iptables crowdsecurity/linux crowdsecurity/nginx crowdsecurity/nginx-proxy-manager"
-      PARSERS: "crowdsecurity/dateparse-enrich crowdsecurity/traefik-logs crowdsecurity/nginx-proxy-manager-logs crowdsecurity/sshd-logs crowdsecurity/syslog-logs crowdsecurity/geoip-enrich"
+      COLLECTIONS: "crowdsecurity/traefik crowdsecurity/http-cve crowdsecurity/whitelist-good-actors crowdsecurity/iptables crowdsecurity/linux LePresidente/authelia" 
+      PARSERS: "crowdsecurity/dateparse-enrich crowdsecurity/traefik-logs crowdsecurity/nginx-proxy-manager-logs crowdsecurity/sshd-logs crowdsecurity/syslog-logs crowdsecurity/geoip-enrich LePresidente/authelia-logs"
       GID: "${GID-1000}"
       CUSTOM_HOSTNAME: docker-crowdsec
-      #CROWDSEC_BOUNCER_KEY_API_1: /run/secrets/crowdsec_key_api_1 
-      #CROWDSEC_BOUNCER_KEY_API_2: /run/secrets/crowdsec_key_api_2 
     volumes:
       #ro
       - $DOCKERDIR/logs:/logs:ro

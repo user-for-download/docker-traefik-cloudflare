@@ -1,7 +1,7 @@
 name: crowdsecurity/whitelists
 description: "Whitelist events"
 whitelist:
-  reason: "my ip ranges"
+  reason: "ip ranges"
   ip:
     - "127.0.0.1"
   cidr:

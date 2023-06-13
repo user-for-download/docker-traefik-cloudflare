@@ -18,22 +18,26 @@ cd secrets/ && for i in *; do openssl rand -hex 16 > $i; done && cd ..
 ```
 ## Change config .env
 ```bash
-cp .env.example .env
+nano .env
 ```
 > change `SITE.DOMAIN `, `USER`, `PUID` and `PGID`
 
-## Create acme.json
+## Chmod acme.json
 ```bash
-touch appdata/traefik/acme/acme.json && chmod 600 appdata/traefik/acme/acme.json
+chmod 600 appdata/traefik/acme/acme.json
 ```
 
-## Deploy first
+## Network create for traefik and socket_proxy 
 ```bash
 docker network create -d bridge socket_proxy --subnet 172.16.91.0/24
 docker network create -d bridge t2_proxy --subnet 172.16.90.0/24
 ```
+## Delete dynamic.yaml
+```bash
+rm appdata\traefik\rules\dynamic.yaml
+```
 
-## Deploy traefik and docker-socket-proxy
+## Deploy traefik and socket-proxy
 ```bash
 docker-compose up -d
 ```
@@ -43,7 +47,7 @@ Check logs
 docker-compose logs
 cat logs/traefik/traefik.log
 ```
-> go https://traefic.SITE.DOMAIN
+> Wait to create a certificate and go https://traefic.SITE.DOMAIN
 
 ## Deploy services
 ```bash
@@ -55,7 +59,7 @@ docker-compose -p mntr -f docker-compose-mntr.yml up -d
 ## If you need authorization, configure Authelia
 Authella works only with HTTPS! Get a certificate through Let’s Encrypt. 
 ```bash
-cd appdata/authelia/configuration.example.yml .configuration.yml 
+nano appdata/authelia/configuration.yml
 ```
 and replase all `site.domain` in configuration.yml 
 

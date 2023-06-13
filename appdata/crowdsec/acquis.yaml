@@ -10,3 +10,8 @@ filenames:
   - /logs/traefik/access.log
 labels:
   type: traefik
+---
+filenames:
+  - /logs/authelia/authelia.*.log
+labels:
+  type: authelia

@@ -17,4 +17,21 @@ http:
       loadBalancer:
         serversTransport: skipverify
         servers:
-          - url: 'http://192.168.xxx.xxx'
+          - url: 'http://xxx.xxx.xxx.xxx'
+tcp:
+  routers:
+    app-svc-tcp-rtr:
+      rule: HostSNI(`<SITE>`)
+      entryPoints:
+        - https
+      service: app-svc-tcp
+      middlewares:
+        - middlewares-tcp-local-ip@file
+      tls:
+        passthrough: true
+        certResolver: dns-cloudflare
+  services:
+    app-svc-tcp:
+      loadBalancer:
+        servers:
+          - address: 'xxx.xxx.xxx.xxx:xxxx'
