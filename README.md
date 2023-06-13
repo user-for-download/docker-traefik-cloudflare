@@ -32,7 +32,7 @@ chmod 600 appdata/traefik/acme/acme.json
 docker network create -d bridge socket_proxy --subnet 172.16.91.0/24
 docker network create -d bridge t2_proxy --subnet 172.16.90.0/24
 ```
-## Delete dynamic.yaml
+## If you don’t need a diamic configuration 
 ```bash
 rm appdata\traefik\rules\dynamic.yaml
 ```
@@ -63,24 +63,22 @@ nano appdata/authelia/configuration.yml
 ```
 and replase all `site.domain` in configuration.yml 
 
-> Note: also change appdata/traefik/rules/middlewares.toml 
+Check users and pwd Authelia
+```bash
+cat appdata/authelia/users_database.yml
+```
+## Deploy
+```bash
+docker-compose -p auth -f docker-compose-auth.yml up -d
+```
+> go https://auth.SITE.DOMAIN
+
+> Note: change appdata/traefik/rules/middlewares.toml 
 
 ```yaml
 [http.middlewares.middlewares-authelia.forwardAuth]
     address = "http://authelia:9091/api/verify?rd=https://auth.<SITE.DOMAIN>"
 ```
-Check users Authelia
-```bash
-cat appdata/authelia/users_database.yml
-```
-
-> go https://auth.SITE.DOMAIN
-
-## Deploy
-```bash
-docker-compose -p auth -f docker-compose-auth.yml up -d
-```
-
 Uncomment in docker-compose-*.yml files
 ```yaml
 #traefik.http.routers.<SERVICES>.middlewares: middlewares-authelia@file
