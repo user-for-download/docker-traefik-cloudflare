@@ -34,7 +34,7 @@ docker network create -d bridge t2_proxy --subnet 172.16.90.0/24
 ```
 ## If you don’t need a diamic configuration 
 ```bash
-rm appdata\traefik\rules\dynamic.yaml
+rm appdata/traefik/rules/dynamic.yaml
 ```
 
 ## Deploy traefik and socket-proxy
