@@ -29,9 +29,15 @@ chmod 600 appdata/traefik/acme/acme.json
 
 ## Network create for traefik and socket_proxy 
 ```bash
-docker network create -d bridge socket_proxy --subnet 172.16.91.0/24
+docker network create -d bridge socket_proxy --subnet 172.16.80.0/24
 docker network create -d bridge t2_proxy --subnet 172.16.90.0/24
 ```
+> Note: in order not to multiply a lot of subnets, but at the same time separate services, use a subnet 172.16.100.0/28
+> subnet 172.16.100.0/28 - service 1
+> subnet 172.16.100.16/28 - service 2
+> subnet 172.16.100.32/28 - service 3
+> .....
+
 ## If you don’t need a diamic configuration 
 ```bash
 rm appdata/traefik/rules/dynamic.yaml

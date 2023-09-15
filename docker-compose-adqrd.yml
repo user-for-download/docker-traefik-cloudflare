@@ -1,0 +1,66 @@
+version: "3.9"
+
+name: adquard
+
+volumes:
+   adquard_data: {}
+
+networks:
+  ad_mntr:
+    name: ad_mntr
+    driver: bridge
+    ipam:
+      config:
+        - subnet: 172.16.100.32/28
+
+  dockervlan:
+    name: dockervlan12
+    driver: macvlan
+    driver_opts:
+      parent: ens192
+    ipam:
+      config:
+        - subnet: 192.168.xxx.xxx/24
+          ip_range: 192.168.xxx.xxx/29
+          gateway: 192.168.xxx.xxx
+
+services:
+  traefik-certs-dumper:
+    container_name: traefik-certs-dumper
+    image: ldez/traefik-certs-dumper
+    networks: [ad_mntr]
+    security_opt: [no-new-privileges:true]
+    restart: unless-stopped
+    entrypoint: sh -c '
+      apk add jq
+      ; while ! [ -e acme.json ]
+      || ! [ `jq ".[] | .Certificates | length" acme.json` != 0 ]; do
+      sleep 1
+      ; done
+      && traefik-certs-dumper file --version v2 --watch
+      --source acme.json --dest /data/certs'
+    volumes:
+      - $APPDIR/traefik/acme/acme.json:/acme.json
+      - adquard_data:/data
+
+  adguardhome:
+    container_name: adguardhome
+    image: adguard/adguardhome
+    restart: unless-stopped
+    security_opt: [no-new-privileges:true]
+    networks:
+      dockervlan:
+        ipv4_address: 192.168.xxx.xxx
+    ports:
+      - 53:53/udp
+      - 67:67/udp 
+      - 68:68/tcp 
+      - 68:68/udp 
+      - 80:80/tcp 
+      - 443:443/tcp 
+      - 853:853/tcp 
+      - 3000:3000/tcp 
+    volumes:
+      - $APPDIR/adguardhome/conf:/opt/adguardhome/conf
+      - $APPDIR/adguardhome/work:/opt/adguardhome/work
+      - adquard_data:/opt/adguardhome/vol

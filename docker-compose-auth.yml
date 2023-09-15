@@ -17,7 +17,7 @@ networks:
     driver: bridge
     ipam:
       config:
-        - subnet: 172.16.88.16/28
+        - subnet: 172.16.100.16/28
 
 ########################### SECRETS
 secrets:
@@ -76,6 +76,7 @@ services:
   mariadb:
     container_name: mariadb
     image: 'bitnami/mariadb:latest'
+    restart: unless-stopped
     expose:
       - 3306
     volumes:
