@@ -3,7 +3,7 @@ version: "3.9"
 name: services
 
 volumes:
-    portainer_data: {}
+  portainer_data: {}
 
 networks:
   t2_proxy:
@@ -13,14 +13,14 @@ networks:
   socket_proxy:
     name: socket_proxy
     external: true
- 
+
 services:
   # whoami
   whoami:
     image: containous/whoami
     container_name: whoami
-    networks: [t2_proxy]
-    security_opt: [no-new-privileges:true]
+    networks: [ t2_proxy ]
+    security_opt: [ no-new-privileges:true ]
     restart: unless-stopped
     command:
       - --port=8082
@@ -39,9 +39,9 @@ services:
     container_name: portainer
     image: portainer/portainer-ce
     command: -H tcp://socket-proxy:2375
-    security_opt: [no-new-privileges:true]
+    security_opt: [ no-new-privileges:true ]
     restart: unless-stopped
-    networks: [t2_proxy, socket_proxy]
+    networks: [ t2_proxy, socket_proxy ]
     volumes:
       - portainer_data:/data
     environment:

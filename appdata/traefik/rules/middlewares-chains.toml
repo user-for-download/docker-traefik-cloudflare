@@ -1,19 +1,16 @@
-[http.middlewares]
-  chain-basic = { }
-
 [http.middlewares.basic.chain]
-  middlewares = [ "middlewares-compress", "middlewares-rate-limit" ]
+middlewares = ["middlewares-compress", "middlewares-rate-limit"]
 
 [http.middlewares.chain-no-auth.chain]
-  middlewares = [
-    "middlewares-compress",
-    "middlewares-rate-limit",
-    "middlewares-ipwhitelist"
-  ]
+middlewares = [
+  "middlewares-compress",
+  "middlewares-rate-limit",
+  "middlewares-ipwhitelist",
+]
 
 [http.middlewares.chain-authelia.chain]
-  middlewares = [
-    "middlewares-compress",
-    "middlewares-rate-limit",
-    "middlewares-authelia"
-  ]
+middlewares = [
+  "middlewares-compress",
+  "middlewares-rate-limit",
+  "middlewares-authelia",
+]

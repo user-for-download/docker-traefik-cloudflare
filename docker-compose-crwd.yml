@@ -3,7 +3,7 @@ version: "3.9"
 name: crowdsec
 
 volumes:
-    crowdsec_data: {}
+  crowdsec_data: {}
 
 networks:
   t2_proxy:
@@ -19,7 +19,7 @@ services:
       - 6060
     environment:
       TZ: $TZ
-      COLLECTIONS: "crowdsecurity/traefik crowdsecurity/http-cve crowdsecurity/whitelist-good-actors crowdsecurity/iptables crowdsecurity/linux LePresidente/authelia" 
+      COLLECTIONS: "crowdsecurity/traefik crowdsecurity/http-cve crowdsecurity/whitelist-good-actors crowdsecurity/iptables crowdsecurity/linux LePresidente/authelia"
       PARSERS: "crowdsecurity/dateparse-enrich crowdsecurity/traefik-logs crowdsecurity/nginx-proxy-manager-logs crowdsecurity/sshd-logs crowdsecurity/syslog-logs crowdsecurity/geoip-enrich LePresidente/authelia-logs"
       GID: "${GID-1000}"
       CUSTOM_HOSTNAME: docker-crowdsec
@@ -30,8 +30,8 @@ services:
       # wr
       - $APPDIR/crowdsec:/etc/crowdsec
       - crowdsec_data:/var/lib/crowdsec/data
-    networks: [t2_proxy]
-    security_opt: [no-new-privileges:true]
+    networks: [ t2_proxy ]
+    security_opt: [ no-new-privileges:true ]
     restart: unless-stopped
     labels:
       traefik.enable: true
@@ -41,7 +41,7 @@ services:
       traefik.http.services.crowdsec-svc.loadbalancer.server.port: 8080
       traefik.http.routers.crowdsec-rtr.tls: true
       org.label-schema.group: "monitoring"
-  
+
   #dashboards crowdsec
   crowdsec-dashboard:
     container_name: crowdsec-dashboard
@@ -52,8 +52,8 @@ services:
       MGID: "${GID-1000}"
     volumes:
       - crowdsec_data:/metabase-data/
-    networks: [t2_proxy]
-    security_opt: [no-new-privileges:true]
+    networks: [ t2_proxy ]
+    security_opt: [ no-new-privileges:true ]
     restart: unless-stopped
     labels:
       traefik.enable: true

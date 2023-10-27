@@ -21,10 +21,10 @@ services:
         ipv4_address: 172.16.80.254
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock
-    security_opt: [no-new-privileges:true]
+    security_opt: [ no-new-privileges:true ]
     restart: always
     environment:
-      - LOG_LEVEL=info 
+      - LOG_LEVEL=info
       - EVENTS=1
       - PING=1
       - VERSION=1
@@ -58,7 +58,7 @@ services:
     image: traefik
     networks:
       t2_proxy:
-        ipv4_address: 172.16.90.254 
+        ipv4_address: 172.16.90.254
       socket_proxy:
     ports:
       - target: 80
@@ -77,11 +77,10 @@ services:
     environment:
       - TZ=$TZ
       - CF_API_EMAIL=$CLOUDFLARE_EMAIL
-      - CF_API_KEY=$CLOUDFLARE_API_KEY
-      - DOMAINNAME_CLOUD_SERVER
-    security_opt: [no-new-privileges:true]
+      - CF_DNS_API_TOKEN=$CLOUDFLARE_API_TOKEN
+    security_opt: [ no-new-privileges:true ]
     restart: always
-    depends_on: [socket-proxy]
+    depends_on: [ socket-proxy ]
     labels:
       traefik.enable: true
       traefik.http.routers.traefik-rtr.entrypoints: https

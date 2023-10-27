@@ -3,9 +3,9 @@ version: "3.9"
 name: authelia
 
 volumes:
-    authelia_data: {}
-    redis_data: {}
-    mariadb_data: {}
+  authelia_data: {}
+  redis_data: {}
+  mariadb_data: {}
 
 networks:
   t2_proxy:
@@ -21,7 +21,7 @@ networks:
 
 ########################### SECRETS
 secrets:
- #authelia
+  #authelia
   authelia_jwt_secret:
     file: $SECRETSDIR/AUTHELIA_JWT_SECRET
   authelia_session_secret:
@@ -50,7 +50,14 @@ services:
       - $APPDIR/authelia:/config
       - authelia_data:/data
       - $DOCKERDIR/logs/authelia:/logs
-    secrets: [authelia_jwt_secret, authelia_session_secret, authelia_storage_mysql_password, authelia_storage_encryption_key, authelia_session_redis_password]
+    secrets:
+      [
+        authelia_jwt_secret,
+        authelia_session_secret,
+        authelia_storage_mysql_password,
+        authelia_storage_encryption_key,
+        authelia_session_redis_password
+      ]
     environment:
       TZ: $TZ
       AUTHELIA_JWT_SECRET_FILE: /run/secrets/authelia_jwt_secret
@@ -58,10 +65,10 @@ services:
       AUTHELIA_STORAGE_MYSQL_PASSWORD_FILE: /run/secrets/authelia_storage_mysql_password
       AUTHELIA_STORAGE_ENCRYPTION_KEY_FILE: /run/secrets/authelia_storage_encryption_key
       AUTHELIA_SESSION_REDIS_PASSWORD_FILE: /run/secrets/authelia_session_redis_password
-    networks: [t2_proxy, net_auth]
-    security_opt: [no-new-privileges:true]
+    networks: [ t2_proxy, net_auth ]
+    security_opt: [ no-new-privileges:true ]
     restart: unless-stopped
-    depends_on: [redis, mariadb]
+    depends_on: [ redis, mariadb ]
     labels:
       traefik.enable: true
       traefik.http.routers.authelia-rtr.entrypoints: https
@@ -82,9 +89,9 @@ services:
     volumes:
       - mariadb_data:/bitnami/mariadb/data
       - /etc/localtime:/etc/localtime:ro
-    secrets: [mysql_root_password, mysql_password]
-    security_opt: [no-new-privileges:true]
-    networks: [net_auth]
+    secrets: [ mysql_root_password, mysql_password ]
+    security_opt: [ no-new-privileges:true ]
+    networks: [ net_auth ]
     environment:
       PUID: $PUID
       PGID: $PGID
@@ -102,17 +109,22 @@ services:
     container_name: redis
     image: redis:alpine
     restart: unless-stopped
-    command: ["sh", "-c", "redis-server --requirepass \"$$(cat /run/secrets/redis_password)\" --maxmemory 512mb --maxmemory-policy allkeys-lru"]
+    command:
+      [
+        "sh",
+        "-c",
+        "redis-server --requirepass \"$$(cat /run/secrets/redis_password)\" --maxmemory 512mb --maxmemory-policy allkeys-lru"
+      ]
     expose:
       - 6379
-    networks: [net_auth]
-    security_opt: [no-new-privileges:true]
+    networks: [ net_auth ]
+    security_opt: [ no-new-privileges:true ]
     volumes:
       - redis_data:/data
       - /etc/TZ:/etc/timezone:ro
       - /etc/localtime:/etc/localtime:ro
-    environment: 
+    environment:
       - REDIS_PASSWORD_FILE=/run/secrets/redis_password
-    secrets: [redis_password]
+    secrets: [ redis_password ]
     labels:
       org.label-schema.group: "monitoring"

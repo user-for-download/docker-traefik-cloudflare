@@ -3,16 +3,16 @@ version: "3.9"
 name: monitoring
 
 volumes:
-    prometheus_data: {}
-    grafana_data: {}
-    alertmanager_data: {}
-    postgres_data: {}
+  prometheus_data: {}
+  grafana_data: {}
+  alertmanager_data: {}
+  postgres_data: {}
 
 networks:
   t2_proxy:
     name: t2_proxy
     external: true
- 
+
   net_mntr:
     name: net_mntr
     driver: bridge
@@ -22,7 +22,7 @@ networks:
 
 ########################### SECRETS
 secrets:
- #Grafana
+  #Grafana
   gf_database_password:
     file: $SECRETSDIR/GF_DATABASE_PASSWORD
   postgres_password:
@@ -31,31 +31,31 @@ secrets:
 services:
   # prometheus 
   prometheus:
-      image: prom/prometheus
-      container_name: prometheus
-      volumes:
-        - $APPDIR/prometheus:/etc/prometheus
-        - prometheus_data:/prometheus
-      command:
-        - --config.file=/etc/prometheus/prometheus.yml
-        - --storage.tsdb.path=/prometheus
-        - --web.console.libraries=/etc/prometheus/console_libraries
-        - --web.console.templates=/etc/prometheus/consoles
-        - --storage.tsdb.retention.time=200h
-        - --web.enable-lifecycle
-      networks: [t2_proxy, net_mntr]
-      security_opt: [no-new-privileges:true]
-      restart: unless-stopped
-      labels:
-        traefik.enable: true
-        traefik.http.routers.prometheus-rtr.entrypoints: https
-        traefik.http.routers.prometheus-rtr.rule: Host(`$PROMETHEUS_DOMAINNAME`)
-        traefik.http.routers.prometheus-rtr.service: prometheus-svc
-        #traefik.http.routers.prometheus-rtr.middlewares: middlewares-authelia@file
-        traefik.http.services.prometheus-svc.loadbalancer.server.port: 9090 
-        traefik.http.routers.prometheus-rtr.tls: true
-        org.label-schema.group: "monitoring"
-  
+    image: prom/prometheus
+    container_name: prometheus
+    volumes:
+      - $APPDIR/prometheus:/etc/prometheus
+      - prometheus_data:/prometheus
+    command:
+      - --config.file=/etc/prometheus/prometheus.yml
+      - --storage.tsdb.path=/prometheus
+      - --web.console.libraries=/etc/prometheus/console_libraries
+      - --web.console.templates=/etc/prometheus/consoles
+      - --storage.tsdb.retention.time=200h
+      - --web.enable-lifecycle
+    networks: [ t2_proxy, net_mntr ]
+    security_opt: [ no-new-privileges:true ]
+    restart: unless-stopped
+    labels:
+      traefik.enable: true
+      traefik.http.routers.prometheus-rtr.entrypoints: https
+      traefik.http.routers.prometheus-rtr.rule: Host(`$PROMETHEUS_DOMAINNAME`)
+      traefik.http.routers.prometheus-rtr.service: prometheus-svc
+      #traefik.http.routers.prometheus-rtr.middlewares: middlewares-authelia@file
+      traefik.http.services.prometheus-svc.loadbalancer.server.port: 9090
+      traefik.http.routers.prometheus-rtr.tls: true
+      org.label-schema.group: "monitoring"
+
   # Grafana
   grafana:
     image: grafana/grafana:latest
@@ -64,11 +64,11 @@ services:
     volumes:
       - grafana_data:/var/lib/grafana
       - $APPDIR/grafana/provisioning:/etc/grafana/provisioning
-    networks: [t2_proxy, net_mntr]
-    security_opt: [no-new-privileges:true]
+    networks: [ t2_proxy, net_mntr ]
+    security_opt: [ no-new-privileges:true ]
     restart: unless-stopped
-    depends_on: [postgres]
-    secrets: [gf_database_password]
+    depends_on: [ postgres ]
+    secrets: [ gf_database_password ]
     environment:
       TZ: $TZ
       GF_DEFAULT_INSTANCE_NAME: setup
@@ -88,14 +88,14 @@ services:
       traefik.http.services.grafana-svc.loadbalancer.server.port: 3000
       traefik.http.routers.grafana-rtr.tls: true
       org.label-schema.group: "monitoring"
-  
+
   # postgres
   postgres:
     container_name: gr-postgres
     image: bitnami/postgresql:latest
-    networks: [net_mntr]
+    networks: [ net_mntr ]
     restart: unless-stopped
-    secrets: [postgres_password]
+    secrets: [ postgres_password ]
     environment:
       POSTGRESQL_USERNAME: grafana
       POSTGRESQL_DATABASE: grafana
@@ -122,8 +122,8 @@ services:
       - '--collector.filesystem.mount-points-exclude=^/(sys|proc|host|etc)($$|/)'
     expose:
       - 9100
-    networks: [net_mntr]
-    security_opt: [no-new-privileges:true]
+    networks: [ net_mntr ]
+    security_opt: [ no-new-privileges:true ]
     restart: unless-stopped
 
   # cadvisor 
@@ -140,8 +140,8 @@ services:
       - /var/lib/docker:/var/lib/docker:ro
     expose:
       - 808
-    networks: [net_mntr]
-    security_opt: [no-new-privileges:true]
+    networks: [ net_mntr ]
+    security_opt: [ no-new-privileges:true ]
     restart: unless-stopped
 
   # alertmanager 
@@ -151,13 +151,13 @@ services:
     volumes:
       - $APPDIR/alertmanager:/config
       - alertmanager_data:/alertmanager
-    security_opt: [no-new-privileges:true]
+    security_opt: [ no-new-privileges:true ]
     restart: unless-stopped
-    networks: [t2_proxy, net_mntr]
-    command: 
-     - "--config.file=/config/alertmanager.yml"
-     - "--log.level=warn"
-     - "--storage.path=/alertmanager"
+    networks: [ t2_proxy, net_mntr ]
+    command:
+      - "--config.file=/config/alertmanager.yml"
+      - "--log.level=warn"
+      - "--storage.path=/alertmanager"
     labels:
       traefik.enable: true
       traefik.http.routers.alertmanager-rtr.entrypoints: https
