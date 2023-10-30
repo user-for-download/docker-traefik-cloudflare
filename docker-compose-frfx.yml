@@ -1,0 +1,35 @@
+version: "3.9"
+
+name: firefox
+
+volumes:
+  frfx_data: {}
+
+networks:
+  t2_proxy:
+    name: t2_proxy
+    external: true
+
+services:
+  firefox:
+    container_name: firefox
+    image: lscr.io/linuxserver/firefox:latest
+    security_opt: [ no-new-privileges:true, seccomp:unconfined ]
+    networks: [ t2_proxy ]
+    environment:
+      - PUID=$PUID
+      - PGID=$PGID
+      - TZ=$TZ
+    volumes:
+      - frfx_data:/config
+    shm_size: "1gb"
+    restart: unless-stopped
+    labels:
+      traefik.enable: true
+      traefik.http.routers.frfx-rtr.entrypoints: https
+      traefik.http.routers.frfx-rtr.rule: Host(`$FRFX_DOMAINNAME`)
+      traefik.http.routers.frfx-rtr.service: frfx-svc
+      traefik.http.services.frfx-svc.loadbalancer.server.port: 3000
+      # traefik.http.routers.frfx-rtr.middlewares: middlewares-authelia@file
+      traefik.http.routers.frfx-rtr.tls: true
+      org.label-schema.group: "monitoring"
