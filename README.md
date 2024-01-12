@@ -11,6 +11,7 @@ The latest versions of dockers were used on the publication mark. Now they may n
 - authelia
 - crowdsec
 - crowdsec-dashboard
+- adguardhome
 - owncloud
 
 ## Create new secrets
@@ -34,10 +35,10 @@ docker network create -d bridge socket_proxy --subnet 172.16.80.0/24
 docker network create -d bridge t2_proxy --subnet 172.16.90.0/24
 ```
 > Note: in order not to multiply a lot of subnets, but at the same time separate services, use a subnet 172.16.100.0/24
-> subnet 172.16.100.0/28 - service 1
-> subnet 172.16.100.16/28 - service 2
-> subnet 172.16.100.32/28 - service 3
-> subnet 172.16.100.48/28 - service 3
+> - subnet 172.16.100.0/28 - service 1
+> - subnet 172.16.100.16/28 - service 2
+> - subnet 172.16.100.32/28 - service 3
+> - subnet 172.16.100.48/28 - service 3
 > .....
 
 ## If you don’t need a diamic configuration 
@@ -63,6 +64,7 @@ docker-compose -p svc -f docker-compose-svc.yml up -d
 docker-compose -p crds -f docker-compose-crwd.yml up -d
 docker-compose -p own -f docker-compose-owncloud.yml up -d
 docker-compose -p mntr -f docker-compose-mntr.yml up -d
+docker-compose -p adqrd -f docker-compose-adqrd.yml up -d
 ```
 
 ## If you need authorization, configure Authelia
@@ -101,3 +103,8 @@ docker-compose -p <SERVICES> -f docker-compose-<FILE>.yml up -d
 
 ## Crowdsec
 go to https://www.smarthomebeginner.com/crowdsec-docker-compose-1-fw-bouncer/
+
+## Adguardhome
+> no port 53 and others
+use only external https://dns.<SITE.DOMAIN>/dns-query
+
