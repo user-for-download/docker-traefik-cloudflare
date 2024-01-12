@@ -87,12 +87,17 @@ docker-compose -p auth -f docker-compose-auth.yml up -d
 > Note: change appdata/traefik/rules/middlewares.toml 
 
 ```yaml
-[http.middlewares.middlewares-authelia.forwardAuth]
-    address = "http://authelia:9091/api/verify?rd=https://auth.<SITE.DOMAIN>"
+    [http.middlewares.middlewares-authelia.forwardAuth]
+        address = "http://authelia:9091/api/verify?rd=https://auth.<SITE.DOMAIN>"
 ```
-Uncomment in docker-compose-*.yml files
+### Down and up traefik service
+```bash
+docker-compose down
+docker-compose up -d
+```
+### Uncomment in docker-compose-*.yml files
 ```yaml
-#traefik.http.routers.<SERVICES>.middlewares: middlewares-authelia@file
+    #traefik.http.routers.<SERVICES>.middlewares: middlewares-authelia@file
 ```
 
 ## If you changed then run the docker-compose down and up 
