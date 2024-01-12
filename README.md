@@ -56,9 +56,9 @@ Check logs
 docker-compose logs
 cat logs/traefik/traefik.log
 ```
-> Wait to create a certificate and go https://traefic.SITE.DOMAIN
+> Wait to create a certificate and go https://traefik.SITE.DOMAIN
 
-## Deploy services
+## Deploy any services 
 ```bash
 docker-compose -p svc -f docker-compose-svc.yml up -d
 docker-compose -p crds -f docker-compose-crwd.yml up -d
