@@ -11,6 +11,7 @@ The latest versions of dockers were used on the publication mark. Now they may n
 - authelia
 - crowdsec
 - crowdsec-dashboard
+- owncloud
 
 ## Create new secrets
 ```bash
@@ -32,10 +33,11 @@ chmod 600 appdata/traefik/acme/acme.json
 docker network create -d bridge socket_proxy --subnet 172.16.80.0/24
 docker network create -d bridge t2_proxy --subnet 172.16.90.0/24
 ```
-> Note: in order not to multiply a lot of subnets, but at the same time separate services, use a subnet 172.16.100.0/28
+> Note: in order not to multiply a lot of subnets, but at the same time separate services, use a subnet 172.16.100.0/24
 > subnet 172.16.100.0/28 - service 1
 > subnet 172.16.100.16/28 - service 2
 > subnet 172.16.100.32/28 - service 3
+> subnet 172.16.100.48/28 - service 3
 > .....
 
 ## If you don’t need a diamic configuration 
@@ -59,6 +61,7 @@ cat logs/traefik/traefik.log
 ```bash
 docker-compose -p svc -f docker-compose-svc.yml up -d
 docker-compose -p crds -f docker-compose-crwd.yml up -d
+docker-compose -p own -f docker-compose-owncloud.yml up -d
 docker-compose -p mntr -f docker-compose-mntr.yml up -d
 ```
 
@@ -95,3 +98,6 @@ Uncomment in docker-compose-*.yml files
 docker-compose -p <SERVICES> -f docker-compose-<FILE>.yml down
 docker-compose -p <SERVICES> -f docker-compose-<FILE>.yml up -d
 ```
+
+## Crowdsec
+go to https://www.smarthomebeginner.com/crowdsec-docker-compose-1-fw-bouncer/

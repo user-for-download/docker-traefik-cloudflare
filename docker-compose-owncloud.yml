@@ -1,0 +1,132 @@
+version: "3.9"
+
+name: owncloud
+
+volumes:
+  owncloud_files: {}
+  owncloud_redis: {}
+  owncloud_mariadb: {}
+
+networks:
+  t2_proxy:
+    name: t2_proxy
+    external: true
+
+  net_owncloud:
+    name: net_owncloud
+    driver: bridge
+    ipam:
+      config:
+        - subnet: 172.16.100.48/28
+
+########################### SECRETS
+secrets:
+  admin_password:
+    file: $SECRETSDIR/OWNCLOUD_ADMIN_PASSWORD
+  mysql_root_password:
+    file: $SECRETSDIR/OWNCLOUD_MYSQL_ROOT_PASSWORD
+  mysql_password:
+    file: $SECRETSDIR/OWNCLOUD_MYSQL_PASSWORD
+
+services:
+  # owncloud
+  owncloud:
+    image: owncloud/server
+    container_name: owncloud_server
+    restart: always
+    secrets: [ admin_password, mysql_password ]
+    networks: [ t2_proxy, net_owncloud ]
+    security_opt: [ no-new-privileges:true ]
+    depends_on: [ redis, mariadb ]
+    environment:
+      TZ: $TZ
+      OWNCLOUD_DOMAIN: ${OWN_DOMAINNAME}
+      OWNCLOUD_DB_TYPE: mysql
+      OWNCLOUD_DB_NAME: owncloud
+      OWNCLOUD_DB_USERNAME: owncloud
+      OWNCLOUD_DB_PASSWORD: /run/secrets/mysql_password
+      OWNCLOUD_DB_HOST: mariadb
+      OWNCLOUD_ADMIN_USERNAME: addmin
+      OWNCLOUD_ADMIN_PASSWORD: db641c9e5d2497a5684e8750ffcc7ef7
+      OWNCLOUD_MYSQL_UTF8MB4: true
+      OWNCLOUD_REDIS_ENABLED: true
+      OWNCLOUD_REDIS_HOST: redis
+    healthcheck:
+      test: [ "CMD", "/usr/bin/healthcheck" ]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+    volumes:
+      - owncloud_files:/mnt/data
+    labels:
+      traefik.enable: true
+      traefik.http.routers.owncloud-rtr.entrypoints: https
+      traefik.http.routers.owncloud-rtr.rule: Host(`$OWN_DOMAINNAME`)
+      traefik.http.routers.owncloud-rtr.service: owncloud-svc
+      traefik.http.services.owncloud-svc.loadbalancer.server.port: 8080
+      traefik.http.routers.owncloud-rtr.tls: true
+      org.label-schema.group: "monitoring"
+
+  # mariadb
+  mariadb:
+    image: mariadb
+    container_name: owncloud_mariadb
+    restart: always
+    secrets: [ mysql_root_password, mysql_password ]
+    expose:
+      - 3306
+    security_opt: [ no-new-privileges:true ]
+    networks: [ net_owncloud ]
+    command:
+      [
+        "--max-allowed-packet=128M",
+        "--innodb-log-file-size=64M"
+      ]
+    volumes:
+      - owncloud_mariadb:/var/lib/mysql
+      - /etc/localtime:/etc/localtime:ro
+    healthcheck:
+      test:
+        [
+          "CMD",
+          "healthcheck.sh",
+          "--connect",
+          "--innodb_initialized"
+        ]
+      start_period: 1m
+      start_interval: 10s
+      interval: 1m
+      timeout: 5s
+      retries: 3
+    environment:
+      PUID: $PUID
+      PGID: $PGID
+      ALLOW_EMPTY_PASSWORD: no
+      MARIADB_SKIP_TEST_DB: yes
+      MARIADB_AUTO_UPGRADE: 1
+      MYSQL_ROOT_PASSWORD: /run/secrets/mysql_root_password
+      MYSQL_DATABASE: owncloud
+      MYSQL_USER: owncloud
+      MYSQL_PASSWORD: /run/secrets/mysql_password
+    labels:
+      org.label-schema.group: "monitoring"
+
+  # Redis - Key-value Store
+  redis:
+    container_name: owncloud_redis
+    image: redis
+    restart: always
+    command: [ "--databases", "1" ]
+    expose:
+      - 6379
+    networks: [ net_owncloud ]
+    security_opt: [ no-new-privileges:true ]
+    volumes:
+      - owncloud_redis:/data
+    healthcheck:
+      test: [ "CMD", "redis-cli", "ping" ]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    labels:
+      org.label-schema.group: "monitoring"
